@@ -11,13 +11,22 @@ from payments.models import PaymentMilestone, Payment
 from leads.models import Lead
 from django.db.models import Sum
 
-class BookingListView(LoginRequiredMixin, ListView):
-    model = Booking
-    template_name = 'bookings/booking_list.html'
-    context_object_name = 'bookings'
+from django.views import View
 
-    def get_queryset(self):
-        return Booking.objects.none()
+class BookingListView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        project_id = request.GET.get('project')
+        if project_id:
+            from properties.models import Project
+            selected_project = get_object_or_404(Project, id=project_id)
+            return render(request, 'bookings/booking_list.html', {'selected_project': selected_project})
+        else:
+            from properties.models import Project
+            from django.db.models import Count, Q
+            projects = Project.objects.filter(is_active=True, is_delete=False).annotate(
+                booking_count=Count('bookings', filter=Q(bookings__status__in=['CONFIRMED', 'PENDING']))
+            )
+            return render(request, 'bookings/project_selection.html', {'projects': projects})
 
 class BookingDetailView(LoginRequiredMixin, DetailView):
     model = Booking

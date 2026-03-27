@@ -29,6 +29,10 @@ def booking_list_api(request):
     else:
         queryset = Booking.objects.select_related('lead', 'project', 'unit', 'sales_executive').filter(sales_executive=user)
 
+    project_id = request.GET.get('project')
+    if project_id:
+        queryset = queryset.filter(project_id=project_id)
+
     # Search Filtering
     if search_value:
         queryset = queryset.filter(

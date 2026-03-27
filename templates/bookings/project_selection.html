@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Select Project - Bookings{% endblock %}
+
+{% block content %}
+<div class="card p-4 bg-transparent border-0 shadow-none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold py-3 mb-0"><span class="text-primary ">Bookings</span> <span
+                class="text-primary d-none">Select Project</span></h4>
+
+    </div>
+
+    <div class="row g-4">
+        {% for project in projects %}
+        <div class="col-md-4 col-sm-6">
+            <a href="{% url 'booking_list' %}?project={{ project.id }}" class="text-decoration-none h-100 d-block">
+                <div class="card h-100 shadow-sm border-0 project-card position-relative overflow-hidden"
+                    style="transition: all 0.25s ease; cursor: pointer; border-radius: 12px;">
+                    <!-- Top decorative bar -->
+                    <div class="bg-primary position-absolute top-0 start-0 w-100" style="height: 4px; opacity: 0.8;">
+                    </div>
+
+                    <div class="card-body text-center p-4">
+                        <div class="avatar avatar-lg mx-auto mb-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center"
+                            style="width: 60px; height: 60px; border-radius: 50%;">
+                            <i class="bx bx-buildings fs-3 text-primary"></i>
+                        </div>
+                        <h5 class="card-title text-dark fw-bold mb-1 fs-5">{{ project.name }}</h5>
+                        <p class="text-muted small mb-4"><i class="bx bx-map me-1 opacity-75"></i>
+                            {{ project.location|default:"No Location Provided" }}</p>
+
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-semibold border border-success border-opacity-25"
+                                style="letter-spacing: 0.5px;">
+                                <i class="bx bx-receipt me-1"></i> {{ project.booking_count }}
+                                Active Bookings
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-12 py-5 text-center bg-white rounded shadow-sm">
+            <div class="text-muted mb-3"><i class="bx bx-building-house fs-1"></i></div>
+            <h5 class="fw-bold">No Projects Found</h5>
+            <p class="text-muted mb-4">Please add projects in the properties section first to manage bookings.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .project-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 1rem 2rem rgba(0, 0, 0, .1) !important;
+    }
+</style>
+{% endblock %}
