@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+{% if form.instance.pk %}Edit Booking{% else %}New Booking{% endif %} - BuilderCRM
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 38px;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 38px;
+        padding-left: 12px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-6 fw-bold">
+                {% if form.instance.pk %}Edit Booking Record{% else %}Confirm New Booking{% endif %}
+            </h1>
+            <a href="{% url 'booking_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+
+        <div class="card p-4 shadow-sm border-0">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row g-4">
+                    <!-- Section 1: Customer Info -->
+                    <div class="col-md-6">
+                        <div class="card h-100 p-3 bg-light border-0">
+                            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-person-circle me-2"></i>Customer
+                                Details</h6>
+                            {{ form.lead|as_crispy_field }}
+
+                            <div class="row g-2">
+                                <div class="col-6">{{ form.lead_code|as_crispy_field }}</div>
+                                <div class="col-6">{{ form.lead_status|as_crispy_field }}</div>
+                            </div>
+
+                            {{ form.lead_name|as_crispy_field }}
+
+                            <div class="row g-2">
+                                <div class="col-md-6">{{ form.email|as_crispy_field }}</div>
+                                <div class="col-md-6">{{ form.phone|as_crispy_field }}</div>
+                            </div>
+
+                            <hr class="my-2 opacity-25">
+
+                            <div class="row g-2">
+                                <div class="col-6">{{ form.sales_executive|as_crispy_field }}</div>
+                                <div class="col-6">{{ form.status|as_crispy_field }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Project Info -->
+                    <div class="col-md-6">
+                        <div class="card h-100 p-3 bg-light border-0">
+                            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-building me-2"></i>Project Details
+                            </h6>
+                            {{ form.project|as_crispy_field }}
+                            {{ form.unit|as_crispy_field }}
+
+                            <div class="row g-2">
+                                <div class="col-md-6">{{ form.area|as_crispy_field }}</div>
+                                <div class="col-md-6">{{ form.sqft_rate|as_crispy_field }}</div>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-6">{{ form.allotment_number|as_crispy_field }}</div>
+                                <div class="col-md-6">{{ form.car_parking_number|as_crispy_field }}</div>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-12">{{ form.booking_date|as_crispy_field }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Agreement Value Breakup -->
+                    <div class="col-md-12">
+                        <div class="card p-3 bg-light border-0 border-start border-primary border-4 shadow-sm">
+                            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-calculator me-2"></i>Agreement Value
+                                Breakup
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-3">{{ form.base_cost|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.car_parking_cost|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.statutory_1|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.statutory_2|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.gst_amount|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.deposit_amount|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.special_discount|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.agreement_value|as_crispy_field }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Bank Details -->
+                    <div class="col-md-12">
+                        <div class="card p-3 bg-light border-0">
+                            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-bank me-2"></i>Bank Details</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">{{ form.bank_name|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.loan_ac_no|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.loan_status|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.loan_amount|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.bank_executive_name|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.bank_executive_contact|as_crispy_field }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Payment Details (Only for New Bookings) -->
+                    {% if not form.instance.pk %}
+                    <div class="col-md-12">
+                        <div class="card p-3 bg-light border-0 shadow-sm"
+                            style="border-left: 5px solid var(--bs-success) !important;">
+                            <h6 class="text-success fw-bold mb-3"><i class="bi bi-currency-rupee me-2"></i>Initial
+                                Payment Details (Optional)</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">{{ form.initial_payment_amount|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.initial_payment_mode|as_crispy_field }}</div>
+                                <div class="col-md-4">{{ form.initial_payment_reference|as_crispy_field }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="col-md-12">
+                        {{ form.notes|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                        <i class="bi bi-check2-circle me-2"></i>Save Booking Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Select2
+        $('.select2').select2({
+            placeholder: "Select an option",
+            allowClear: true,
+            width: '100%'
+        });
+
+        const projectField = document.querySelector('[name="project"]');
+        const unitField = document.querySelector('[name="unit"]');
+        const areaField = document.querySelector('[name="area"]');
+        const rateField = document.querySelector('[name="sqft_rate"]');
+
+        let currentUnits = [];
+
+        if (projectField && unitField) {
+            projectField.addEventListener('change', function () {
+                const projectId = this.value;
+                if (!projectId) {
+                    unitField.innerHTML = '<option value="">---------</option>';
+                    $(unitField).trigger('change');
+                    currentUnits = [];
+                    // Clear area and rate if project is cleared
+                    if (areaField) areaField.value = '';
+                    if (rateField) rateField.value = '';
+                    return;
+                }
+
+                const currentValue = unitField.value;
+                const includeIdParam = currentValue ? `&include_id=${currentValue}` : '';
+
+                fetch(`/properties/api/units/?project=${projectId}&status=AVAILABLE${includeIdParam}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        currentUnits = data;
+                        unitField.innerHTML = '<option value="">---------</option>';
+                        data.forEach(unit => {
+                            const selected = unit.id == currentValue ? 'selected' : '';
+                            unitField.innerHTML += `<option value="${unit.id}" ${selected}>${unit.unit_number}</option>`;
+                        });
+
+                        $(unitField).trigger('change');
+
+                        // If we have a current value and area is empty, try to populate
+                        if (currentValue && (!areaField.value || areaField.value === "0" || areaField.value === "0.00")) {
+                            updateUnitInfo(currentValue);
+                        }
+                    });
+            });
+
+            $(unitField).on('change', function () {
+                updateUnitInfo(this.value);
+            });
+
+            function updateUnitInfo(unitId) {
+                if (!unitId) {
+                    return;
+                }
+
+                const unit = currentUnits.find(u => u.id == unitId);
+                if (unit) {
+                    if (areaField) areaField.value = unit.size_sqft;
+                    // Trigger calculation
+                    calculateAgreementValue();
+                }
+            }
+
+            if (projectField.value) {
+                projectField.dispatchEvent(new Event('change'));
+            }
+
+            // Agreement Value Calculations
+            const baseCostField = document.querySelector('[name="base_cost"]');
+            const carParkingField = document.querySelector('[name="car_parking_cost"]');
+            const stat1Field = document.querySelector('[name="statutory_1"]');
+            const stat2Field = document.querySelector('[name="statutory_2"]');
+            const gstField = document.querySelector('[name="gst_amount"]');
+            const depositField = document.querySelector('[name="deposit_amount"]');
+            const discountField = document.querySelector('[name="special_discount"]');
+            const agreementValueField = document.querySelector('[name="agreement_value"]');
+
+            function calculateAgreementValue() {
+                const area = parseFloat(areaField.value) || 0;
+                const rate = parseFloat(rateField.value) || 0;
+
+                // Update Base Cost
+                const baseCost = area * rate;
+                if (baseCostField) baseCostField.value = baseCost.toFixed(0);
+
+                // Sum all components
+                const carParking = parseFloat(carParkingField.value) || 0;
+                const stat1 = parseFloat(stat1Field.value) || 0;
+                const stat2 = parseFloat(stat2Field.value) || 0;
+                const gst = parseFloat(gstField.value) || 0;
+                const deposit = parseFloat(depositField.value) || 0;
+                const discount = parseFloat(discountField.value) || 0;
+
+                const total = baseCost + carParking + stat1 + stat2 + gst + deposit - discount;
+                if (agreementValueField) agreementValueField.value = total.toFixed(0);
+            }
+
+            // Add input listeners to all relevant fields
+            [areaField, rateField, carParkingField, stat1Field, stat2Field, gstField, depositField, discountField].forEach(field => {
+                if (field) {
+                    field.addEventListener('input', calculateAgreementValue);
+                }
+            });
+
+            // Initial load calculations
+            calculateAgreementValue();
+        }
+    });
+</script>
+{% endblock %}

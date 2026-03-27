@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Unit - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 fw-bold">Add New Unit to {{ project.name }}</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.tower.id_for_label }}" class="form-label">Tower</label>
+                            {{ form.tower }}
+                            {% if form.tower.errors %}
+                            <div class="text-danger small mt-1">{{ form.tower.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.floor.id_for_label }}" class="form-label">Floor</label>
+                            {{ form.floor }}
+                            {% if form.floor.errors %}
+                            <div class="text-danger small mt-1">{{ form.floor.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.floor_plan_type.id_for_label }}" class="form-label">Floor Plan
+                                Type</label>
+                            {{ form.floor_plan_type }}
+                            {% if form.floor_plan_type.errors %}
+                            <div class="text-danger small mt-1">{{ form.floor_plan_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.unit_number.id_for_label }}" class="form-label">Unit Number</label>
+                            {{ form.unit_number }}
+                            {% if form.unit_number.errors %}
+                            <div class="text-danger small mt-1">{{ form.unit_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.unit_type.id_for_label }}" class="form-label">Unit Type</label>
+                            {{ form.unit_type }}
+                            {% if form.unit_type.errors %}
+                            <div class="text-danger small mt-1">{{ form.unit_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.size_sqft.id_for_label }}" class="form-label">Size (Sq. Ft.)</label>
+                            {{ form.size_sqft }}
+                            {% if form.size_sqft.errors %}
+                            <div class="text-danger small mt-1">{{ form.size_sqft.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">Price</label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                            <div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                        <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.floor_plan.id_for_label }}" class="form-label">Floor Plan</label>
+                        {{ form.floor_plan }}
+                        {% if form.floor_plan.errors %}
+                        <div class="text-danger small mt-1">{{ form.floor_plan.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'project_detail' project.pk %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Add Unit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

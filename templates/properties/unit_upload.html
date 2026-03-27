@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-excel me-2"></i>Upload Units via Excel</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading fw-bold mb-2">Excel Format Instructions:</h6>
+                    <p class="mb-1">Please ensure your Excel file has the following columns (in order):</p>
+                    <ol class="small mb-0">
+                        <li><strong>Unit Number</strong> (Required, e.g., A-101)</li>
+                        <li><strong>Tower</strong> (Optional, e.g., Tower 1)</li>
+                        <li><strong>Floor</strong> (Optional, Number 1-Total Floors)</li>
+                        <li><strong>Floor Plan Type</strong> (Optional, e.g., A, B)</li>
+                        <li><strong>Unit Type</strong> (Optional, e.g., 2BHK)</li>
+                        <li><strong>Size</strong> (Optional, Sq. Ft.)</li>
+                        <li><strong>Price</strong> (Optional, Amount)</li>
+                        <li><strong>Status</strong> (Optional, Available/Blocked/Sold)</li>
+                    </ol>
+                    <hr>
+                    <p class="mb-0 fst-italic text-muted">First row is treated as header and skipped.</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 d-md-block text-end mt-4">
+                        <a href="{% url 'project_detail' project.pk %}" class="btn btn-light me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-2"></i>Upload Units
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

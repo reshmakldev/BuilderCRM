@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ lead.first_name }} {{ lead.last_name }} - BuilderCRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="display-6 fw-bold">{{ lead.first_name }} {{ lead.last_name }}</h1>
+        <p class="text-muted mb-0">Lead Code: <span class="text-primary fw-bold">{{ lead.lead_code }}</span></p>
+    </div>
+    <div>
+        {% if lead.status != 'SOLD' and lead.status != 'FAKE' %}
+        <a href="{% url 'booking_create' %}?lead={{ lead.pk }}" class="btn btn-success me-2">
+            <i class="bi bi-cart-check me-2"></i>Convert to Booking
+        </a>
+        {% endif %}
+        <a href="{% url 'lead_update' lead.pk %}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-pencil me-2"></i>Edit
+        </a>
+        <a href="{% url 'lead_list' %}" class="btn btn-outline-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-4 mb-4">
+            <h5 class="card-title mb-3">Contact Info</h5>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-envelope me-2 text-muted"></i> <a href="#" class="email-link"
+                        data-email="{{ lead.email }}">
+                        {{ lead.email }}</a></li>
+                <li class="mb-2"><i class="bi bi-telephone me-2 text-muted"></i> <a href="#" class="phone-link"
+                        data-phone="{{ lead.phone }}">
+                        {{ lead.phone }}</a></li>
+                <li class="mb-2"><i class="bi bi-geo-alt me-2 text-muted"></i> {{ lead.source }}</li>
+            </ul>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <h5 class="card-title mb-3">Status</h5>
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="badge rounded-pill fs-6
+                    {% if lead.status == 'NEW' %}bg-primary
+                    {% elif lead.status == 'CONTACTED' %}bg-info
+                    {% elif lead.status == 'SOLD' %}bg-success
+                    {% elif lead.status == 'FAKE' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+                    {{ lead.get_status_display }}
+                </span>
+                <small class="text-muted">Updated: {{ lead.updated_at|timesince }} ago</small>
+            </div>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <h5 class="card-title mb-3">Interest Details</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="text-muted mb-1">Project</p>
+                    <p class="fw-bold">{{ lead.interested_project.name|default:"Not specified" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted mb-1">Unit</p>
+                    <p class="fw-bold">
+                        {% if lead.status == 'SOLD' and lead.bookings.exists %}
+                        {% with active_booking=lead.bookings.first %}
+                        <a href="{% url 'booking_detail' active_booking.pk %}">
+                            {{ active_booking.unit.unit_number|default:"Unit N/A" }}
+                        </a>
+                        {% endwith %}
+                        {% else %}
+                        {{ lead.interested_unit.unit_number|default:"Not specified" }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Assignment History Stepper -->
+        <div class="card p-4 mb-4">
+            <h5 class="card-title mb-4">Assignment History</h5>
+            <div class="position-relative">
+                {% for history in assignment_history %}
+                <div class="d-flex mb-4">
+                    <div class="d-flex flex-column align-items-center me-3" style="width: 30px;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center
+                            {% if history.is_current %}bg-primary text-white{% else %}bg-secondary text-white{% endif %}"
+                            style="width: 30px; height: 30px; z-index: 1;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        {% if not forloop.last %}
+                        <div class="h-100 bg-secondary opacity-25" style="width: 2px; min-height: 30px;"></div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1 pb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-1 fw-bold {% if history.is_current %}text-primary{% endif %}">
+                                Assigned to {{ history.assigned_to.username|default:"Unassigned" }}
+                                {% if history.is_current %}
+                                <span class="badge bg-primary ms-2">Current</span>
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted">{{ history.assigned_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <p class="mb-0 text-muted small">
+                            Assigned by {{ history.assigned_by.username|default:"System" }}
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-3">No assignment history.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Activity Tracker Section -->
+        <div class="card p-4 mb-4">
+            <h5 class="card-title mb-3">Activity Timeline</h5>
+
+            <!-- Add Activity Form -->
+            <div class="bg-light p-3 rounded mb-4">
+                <h6 class="fw-bold mb-2">Log Activity</h6>
+                <form action="{% url 'add_lead_activity' lead.pk %}" method="post">
+                    {% csrf_token %}
+                    {{ activity_form|crispy }}
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-sm btn-primary">Log Activity</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline">
+                {% for activity in activities %}
+                <div class="d-flex mb-3">
+                    <div class="me-3">
+                        <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px;">
+                            {% if activity.activity_type == 'CALL' %}
+                            <i class="bi bi-telephone-fill text-primary"></i>
+                            {% elif activity.activity_type == 'EMAIL' %}
+                            <i class="bi bi-envelope-fill text-info"></i>
+                            {% elif activity.activity_type == 'MEETING' %}
+                            <i class="bi bi-people-fill text-success"></i>
+                            {% elif activity.activity_type == 'SITE_VISIT' %}
+                            <i class="bi bi-building-fill text-warning"></i>
+                            {% else %}
+                            <i class="bi bi-sticky-fill text-secondary"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1 fw-bold">{{ activity.get_activity_type_name }}</h6>
+                            <small class="text-muted">{{ activity.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <p class="mb-1 text-muted small">{{ activity.description }}</p>
+                        <small class="text-muted fst-italic">
+                            - Activity by {{ activity.created_by.username|default:"System" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-muted">
+                    <p>No activities logged yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <h5 class="card-title mb-3">Notes</h5>
+            <div class="bg-light p-3 rounded">
+                {{ lead.notes|linebreaks|default:"No notes added." }}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

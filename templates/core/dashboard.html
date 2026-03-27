@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Dashboard - BuilderCRM{% endblock %}
+
+{% block extra_css %}
+<!-- ApexCharts CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.41.0/dist/apexcharts.min.css">
+<style>
+    .card-welcome {
+        background: linear-gradient(135deg, #0d3d94 0%, #3bcacc 100%);
+        color: white;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .card-welcome .card-title {
+        color: white !important;
+    }
+
+    .welcome-img {
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        width: 180px;
+        opacity: 0.9;
+    }
+
+    .stat-hover:hover {
+        transform: translateY(-5px);
+        transition: all 0.3s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Welcome Card -->
+    <div class="col-lg-8 mb-4 order-0">
+        <div class="card card-welcome stat-hover">
+            <div class="d-flex align-items-end row">
+                <div class="col-sm-7">
+                    <div class="card-body py-5 px-5">
+                        <h5 class="card-title text-primary">Congratulations {{ user.username }}! 🎉</h5>
+                        <p class="mb-4 text-white">
+                            You have got <span class="fw-bold">{{ new_leads_count }}</span> more sales
+                            today.
+                            Check your lead page to see the details.
+                        </p>
+                        <a href="{% url 'lead_list' %}" class="btn btn-sm btn-white text-primary fw-bold px-4 py-2"
+                            style="background: white;">View Leads</a>
+                    </div>
+                </div>
+                <div class="col-sm-5 text-center text-sm-left">
+                    <div class="card-body pb-0 px-0 px-md-4">
+                        <i class="bi bi-person-workspace" style="font-size: 8rem; color: rgba(255,255,255,0.2);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="col-lg-4 col-md-4 order-1">
+        <div class="row">
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card stat-hover">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0 bg-label-primary p-2 rounded">
+                                <i class="bx bx-user"></i>
+                            </div>
+                            <span class="badge bg-label-success">+{{ new_leads }}</span>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Total Leads</span>
+                        <h3 class="card-title mb-2">{{ total_leads|format_number }}</h3>
+                        <small class="text-muted">Database size</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card stat-hover">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0 bg-label-success p-2 rounded">
+                                <i class="bx bx-check-double"></i>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Won Deals</span>
+                        <h3 class="card-title mb-2">{{ won_leads|format_number }}</h3>
+                        <small class="text-success fw-semibold"><i class='bx bx-up-arrow-alt'></i> High Success</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card stat-hover">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0 bg-label-info p-2 rounded">
+                                <i class="bx bx-building"></i>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Projects</span>
+                        <h3 class="card-title mb-2">{{ total_projects|format_number }}</h3>
+                        <small class="text-info fw-semibold">Active Ventures</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card stat-hover">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0 bg-label-warning p-2 rounded">
+                                <i class="bx bx-notepad"></i>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Bookings</span>
+                        <h3 class="card-title mb-2">{{ total_bookings|format_number }}</h3>
+                        <small class="text-warning fw-semibold">{{ confirmed_bookings }} Confirmed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Trend Chart -->
+    <div class="col-md-8 col-lg-8 order-2 mb-4">
+        <div class="card h-100">
+            <div class="row row-bordered g-0">
+                <div class="col-md-12">
+                    <h5 class="m-2 p-4">Lead Registration Trend</h5>
+                    <div id="leadTrendApex" class="px-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Inventory Card -->
+    <div class="col-md-4 col-lg-4 order-3 mb-4">
+        <div class="card h-100 p-4">
+            <div class=" d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0 me-2">Unit Inventory</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex flex-column align-items-start">
+                        <h3 class="mb-1">{{ available_units|format_number }}</h3>
+                        <small class="text-success fw-semibold">Available Units</small>
+                    </div>
+                    <div id="unitInventoryApex"></div>
+                </div>
+                <ul class="p-0 m-0">
+                    <li class="d-flex mb-4 pb-1">
+                        <div class="avatar flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-home-alt"></i></span>
+                        </div>
+                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                                <h6 class="mb-0">Residential</h6>
+                                <small class="text-muted">Apartments & Villas</small>
+                            </div>
+                            <div class="user-progress">
+                                <small class="fw-semibold">{{ available_units|format_number }}</small>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Lead Analysis Charts -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <h5 class="card-title p-4 m-2">Leads by Status</h5>
+            </div>
+            <div class="card-body">
+                <div id="statusApex"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <h5 class="card-title p-4 m-2">Leads by Source</h5>
+            </div>
+            <div class="card-body">
+                <div id="sourceApex"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <h5 class="card-title p-4 m-2">Lead Priorities</h5>
+            </div>
+            <div class="card-body">
+                <div id="priorityApex"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Inventory Chart -->
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="d-flex align-items-center justify-content-between p-4 pb-0">
+                <h5 class="card-title m-0">Project Summary</h5>
+                <!-- <small class="text-muted">Available / Blocked / Sold per project</small> -->
+            </div>
+            <div class="card-body">
+                <div id="projectInventoryApex"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Leads Table -->
+<div class="card p-4">
+    <h5 class="m-4 mb-0">Recent Leads</h5>
+    <div class=" m-4 table-responsive text-nowrap">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Lead</th>
+                    <th>Status</th>
+                    <th>Source</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                {% for lead in recent_leads %}
+                <tr>
+                    <td>
+                        <div class="d-flex justify-content-start align-items-center">
+                            <div class="avatar-wrapper me-3">
+                                <div class="avatar avatar-sm bg-label-primary p-2 rounded-circle text-center"
+                                    style="width: 32px; height: 32px; line-height: 16px;">
+                                    {{ lead.first_name|first }}
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <a href="{% url 'lead_detail' lead.pk %}"
+                                    class="text-body text-truncate fw-semibold text-decoration-none">
+                                    {{ lead.first_name }} {{ lead.last_name }}</a>
+                                <small class="text-muted">{{ lead.email }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge 
+                            {% if lead.status == 'NEW' %}bg-label-primary
+                            {% elif lead.status == 'CONTACTED' %}bg-label-info
+                            {% elif lead.status == 'QUALIFIED' %}bg-label-success
+                            {% elif lead.status == 'WON' %}bg-label-success
+                            {% elif lead.status == 'LOST' %}bg-label-danger
+                            {% else %}bg-label-secondary{% endif %}">
+                            {{ lead.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ lead.get_source_display }}</td>
+                    <td>{{ lead.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'lead_detail' lead.pk %}" class="btn btn-sm btn-icon"><i
+                                class="bi bi-eye text-primary"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Chart Script -->
+{{ monthly_labels|json_script:"monthly-labels" }}
+{{ monthly_data|json_script:"monthly-data" }}
+{{ status_labels|json_script:"status-labels" }}
+{{ status_data|json_script:"status-data" }}
+{{ source_labels|json_script:"source-labels" }}
+{{ source_data|json_script:"source-data" }}
+{{ priority_labels|json_script:"priority-labels" }}
+{{ priority_data|json_script:"priority-data" }}
+{{ booking_trend_data|json_script:"booking-trend" }}
+{{ project_names|json_script:"project-names" }}
+{{ project_available|json_script:"project-available" }}
+{{ project_booked|json_script:"project-booked" }}
+{{ project_sold|json_script:"project-sold" }}
+
+<!-- ApexCharts Script -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const getJsonData = (id) => JSON.parse(document.getElementById(id).textContent);
+        const availableUnits = "{{ available_units }}";
+        const totalUnits = "{{ total_units }}";
+        const config = {
+            colors: {
+                primary: '#0d3d94',
+                secondary: '#64748b',
+                success: '#10b981',
+                info: '#3b82f6',
+                warning: '#f59e0b',
+                danger: '#ef4444',
+                gray: '#a1acb8',
+                teal1: '#0b8081',
+                teal2: '#12b8b9',
+                teal3: '#3bcacc',
+                teal4: '#76dcdc'
+            }
+        };
+
+        // Lead Trend Chart
+        const trendOptions = {
+            series: [{
+                name: 'New Leads',
+                data: getJsonData('monthly-data')
+            }],
+            chart: {
+                height: 315,
+                type: 'area',
+                toolbar: { show: false }
+            },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            colors: [config.colors.primary],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.25, stops: [0, 95, 100]
+                }
+            },
+            grid: { borderColor: '#d9dee3', strokeDashArray: 3 },
+            xaxis: {
+                categories: getJsonData('monthly-labels'),
+                axisBorder: { show: false },
+                axisTicks: { show: false }
+            },
+            yaxis: { show: false }
+        };
+        new ApexCharts(document.querySelector("#leadTrendApex"), trendOptions).render();
+
+        const availablePct = totalUnits > 0 ? Math.round((availableUnits / totalUnits) * 100) : 0;
+        const unitOptions = {
+            series: [availablePct],
+            chart: { height: 150, type: 'radialBar' },
+            plotOptions: {
+                radialBar: {
+                    hollow: { size: '50%' },
+                    dataLabels: {
+                        name: { show: false },
+                        value: { offsetY: 5, fontSize: '15px' }
+                    }
+                }
+            },
+            colors: [config.colors.success]
+        };
+        new ApexCharts(document.querySelector("#unitInventoryApex"), unitOptions).render();
+
+        // Project Unit Inventory Chart
+        const projectInventoryOptions = {
+            series: [
+                { name: 'Available', data: getJsonData('project-available') },
+                { name: 'Blocked', data: getJsonData('project-booked') },
+                { name: 'Sold', data: getJsonData('project-sold') }
+            ],
+            chart: {
+                type: 'bar',
+                height: 380,
+                stacked: true,
+                toolbar: { show: false }
+            },
+            colors: [config.colors.success, config.colors.warning, config.colors.primary],
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    borderRadius: 4,
+                    dataLabels: { total: { enabled: true, style: { fontSize: '13px', fontWeight: 900 } } }
+                },
+            },
+            stroke: { width: 1, colors: ['#fff'] },
+            xaxis: {
+                categories: getJsonData('project-names'),
+                labels: { rotate: -30, style: { fontSize: '12px' } }
+            },
+            yaxis: { title: { text: "Units" } },
+            fill: { opacity: 1 },
+            legend: { position: 'top', horizontalAlign: 'right' },
+            tooltip: {
+                y: { formatter: (val) => val + ' units' }
+            }
+        };
+        new ApexCharts(document.querySelector("#projectInventoryApex"), projectInventoryOptions).render();
+
+        // Status Distribution
+        const statusOptions = {
+            series: getJsonData('status-data'),
+            chart: { type: 'donut', height: 300 },
+            labels: getJsonData('status-labels'),
+            colors: [config.colors.primary, config.colors.teal2, config.colors.teal3, config.colors.teal4, config.colors.warning, config.colors.gray],
+            legend: { position: 'bottom' },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 1, stops: [0, 95, 100], gradientToColors: [config.colors.primary, config.colors.success, config.colors.info, config.colors.warning]
+                }
+            },
+            dataLabels: { enabled: false },
+            plotOptions: { pie: { donut: { size: '65%' } } }
+        };
+        new ApexCharts(document.querySelector("#statusApex"), statusOptions).render();
+
+        // Source Distribution
+        const sourceOptions = {
+            series: [{ data: getJsonData('source-data') }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+            dataLabels: { enabled: false },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1, opacityFrom: 0.75, opacityTo: 1, stops: [0, 95, 100], gradientToColors: [config.colors.primary, config.colors.success, config.colors.info, config.colors.warning]
+                }
+            },
+            colors: [config.colors.primary, config.colors.success, config.colors.info, config.colors.warning],
+
+            xaxis: { categories: getJsonData('source-labels') }
+        };
+        new ApexCharts(document.querySelector("#sourceApex"), sourceOptions).render();
+
+        // Priority Distribution
+        const priorityOptions = {
+            series: getJsonData('priority-data'),
+            chart: { type: 'pie', height: 300 },
+            labels: getJsonData('priority-labels'),
+            colors: [config.colors.primary, config.colors.warning, config.colors.teal3, config.colors.teal4, config.colors.teal2, config.colors.gray],
+            legend: { position: 'bottom' },
+            dataLabels: { enabled: true },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1, opacityFrom: 1, opacityTo: 0.85, stops: [0, 95, 100], gradientToColors: [config.colors.primary, config.colors.warning, config.colors.teal3, config.colors.teal4, config.colors.teal2, config.colors.gray]
+                }
+            },
+        };
+        new ApexCharts(document.querySelector("#priorityApex"), priorityOptions).render();
+    });
+</script>
+{% endblock %}

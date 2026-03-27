@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leads - BuilderCRM{% endblock %}
+
+
+{% block extra_css %}
+<!-- Global styles handle premium buttons -->
+{% endblock %}
+
+{% block content %}
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Leads</span></h4>
+        <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-outline-success me-2" data-bs-toggle="modal"
+                data-bs-target="#uploadModal">
+                <span class="tf-icons bx bx-upload me-1"></span>Upload
+            </button>
+            <a href="{% url 'lead_create' %}" class="btn btn-primary">
+                <span class="tf-icons bx bx-plus me-1"></span>Add Lead
+            </a>
+        </div>
+    </div>
+    <div class="card-datatable table-responsive text-nowrap">
+        <table class="table table-hover border-top" id="leadsTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Phone</th>
+                    <th>Location</th>
+                    <th>Interested Project</th>
+                    <th>Source</th>
+                    <th>Assigned To</th>
+                    <th>Created</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                <!-- DataTables will populate this -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Leads from Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'upload_leads' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="lead_file" class="form-label">Select Excel File (.xlsx, .xls)</label>
+                        <input class="form-control" type="file" id="lead_file" name="lead_file" accept=".xlsx, .xls"
+                            required>
+                        <div class="form-text mt-2">
+                            File must include: first_name, last_name, phone.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'download_lead_template' %}" class="btn btn-label-secondary me-auto">
+                        <i class="bi bi-download"></i> Template
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Start Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Error Report Modal -->
+<div class="modal fade" id="errorReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Upload Completed with Errors</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="errorReportMessage" class="fw-semibold"></p>
+                <p class="text-muted">Some leads could not be processed due to validation errors.</p>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Dismiss</button>
+                <a href="{% url 'download_failed_leads' %}" class="btn btn-danger">Download Error Log</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Fake Lead Confirmation Modal -->
+<div class="modal fade" id="fakeleadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bx bx-ghost me-2"></i>Mark as Fake Lead?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-0">This will change the lead status to <strong>Fake</strong> and log an
+                    activity.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmFakeBtn">
+                    <i class="bx bx-ghost me-1"></i>Yes, Mark as Fake
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block datatable_js %}
+<!-- Local DataTables Core -->
+<script src="{% static 'assets/datatable/datatables.js' %}"></script>
+<!-- Extensions (Strictly BS5 versions) -->
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/3.0.2/js/responsive.bootstrap5.min.js"></script>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize DataTable with Server-Side Processing
+        const table = $('#leadsTable').DataTable({
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: "{% url 'lead_list_api' %}",
+                type: "GET"
+            },
+            columns: [
+                { data: 0, className: 'all' }, // Name
+                { data: 1 }, // Status
+                { data: 2 }, // Phone
+                { data: 3 }, // Location
+                { data: 4 }, // Interested Project
+                { data: 5 }, // Source
+                { data: 6 }, // Assigned To
+                { data: 7 }, // Created
+                { data: 8, orderable: false, className: 'text-start all' }  // Actions
+            ],
+            order: [[7, "desc"]],
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            language: {
+                search: "",
+                searchPlaceholder: "Search Leads...",
+                processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>'
+            },
+            layout: {
+                topStart: 'pageLength',
+                topEnd: [
+                    {
+                        buttons: [
+                            {
+                                extend: 'collection',
+                                className: 'btn btn-label-primary dropdown-toggle me-3',
+                                text: '<i class="bx bx-export me-1"></i>Export',
+                                buttons: [
+                                    {
+                                        extend: 'print',
+                                        text: '<i class="bx bx-printer me-2" ></i>Print',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                                    },
+                                    {
+                                        extend: 'csv',
+                                        text: '<i class="bx bx-file me-2" ></i>Csv',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                                    },
+                                    {
+                                        extend: 'excel',
+                                        text: '<i class="bx bxs-file-export me-2" ></i>Excel',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        text: '<i class="bx bxs-file-pdf me-2" ></i>Pdf',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                                    },
+                                    {
+                                        extend: 'copy',
+                                        text: '<i class="bx bx-copy me-2" ></i>Copy',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    'search'
+                ],
+                bottomStart: 'info',
+                bottomEnd: 'paging'
+            },
+            responsive: true
+        });
+
+        // Additional styling for search input to match Sneat
+        $('.dataTables_filter input').addClass('form-control form-control-sm');
+        $('.dataTables_length select').addClass('form-select form-select-sm');
+
+        {% if messages %}
+        {% for message in messages %}
+        {% if 'upload_failure' in message.tags %}
+        var myModal = new bootstrap.Modal(document.getElementById('errorReportModal'));
+        document.getElementById('errorReportMessage').textContent = "{{ message }}";
+        myModal.show();
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        // --- Fake Lead Handler ---
+        let fakeLeadUrl = null;
+        const fakeModal = new bootstrap.Modal(document.getElementById('fakeleadModal'));
+
+        // Delegated click on dynamically rendered rows
+        $('#leadsTable').on('click', '.mark-fake-btn', function () {
+            fakeLeadUrl = $(this).data('url');
+            fakeModal.show();
+        });
+
+        document.getElementById('confirmFakeBtn').addEventListener('click', function () {
+            if (!fakeLeadUrl) return;
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processing...';
+
+            fetch(fakeLeadUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    fakeModal.hide();
+                    if (data.success) {
+                        table.ajax.reload(null, false); // reload without resetting pagination
+                    }
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bx bx-ghost me-1"></i>Yes, Mark as Fake';
+                    fakeLeadUrl = null;
+                });
+        });
+    });
+</script>
+{% endblock %}

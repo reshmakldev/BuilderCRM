@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_filters %}
+
+{% block title %}Bookings - BuilderCRM{% endblock %}
+
+{% block extra_css %}
+<!-- Global styles handle buttons and tables -->
+{% endblock %}
+
+{% block content %}
+
+
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Bookings</span></h4>
+        <a href="{% url 'booking_create' %}" class="btn btn-primary">
+            <span class="tf-icons bx bx-plus me-1"></span>New Booking
+        </a>
+    </div>
+    <div class="card-datatable table-responsive text-nowrap">
+        <table class="table table-hover border-top" id="bookingsTable">
+            <thead>
+                <tr>
+                    <th>Lead Name</th>
+                    <th>Project & Unit</th>
+                    <th>Booking Date</th>
+                    <th>Deal Value</th>
+                    <th>Executive</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                <!-- DataTables will populate this -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block datatable_js %}
+<!-- Local DataTables Core -->
+<script src="{% static 'assets/datatable/datatables.js' %}"></script>
+<!-- Extensions -->
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/3.0.2/js/responsive.bootstrap5.min.js"></script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = $('#bookingsTable').DataTable({
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: "{% url 'booking_list_api' %}",
+                type: "GET"
+            },
+            columns: [
+                { data: 0 }, // Lead Name
+                { data: 1 }, // Project & Unit
+                { data: 2 }, // Booking Date
+                { data: 3 }, // Deal Value
+                { data: 4 }, // Executive
+                { data: 5 }, // Status
+                { data: 6, orderable: false, className: 'text-center' }  // Actions
+            ],
+            order: [[2, "desc"]],
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            language: {
+                search: "",
+                searchPlaceholder: "Search Bookings...",
+                processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>'
+            },
+            layout: {
+                topStart: 'pageLength',
+                topEnd: [
+                    {
+                        buttons: [
+                            {
+                                extend: 'collection',
+                                className: 'btn btn-label-primary dropdown-toggle me-3',
+                                text: '<i class="bx bx-export me-1"></i>Export',
+                                buttons: [
+                                    {
+                                        extend: 'print',
+                                        text: '<i class="bx bx-printer me-2" ></i>Print',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                                    },
+                                    {
+                                        extend: 'csv',
+                                        text: '<i class="bx bx-file me-2" ></i>Csv',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                                    },
+                                    {
+                                        extend: 'excel',
+                                        text: '<i class="bx bxs-file-export me-2" ></i>Excel',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        text: '<i class="bx bxs-file-pdf me-2" ></i>Pdf',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                                    },
+                                    {
+                                        extend: 'copy',
+                                        text: '<i class="bx bx-copy me-2" ></i>Copy',
+                                        className: 'dropdown-item',
+                                        exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    'search'
+                ],
+                bottomStart: 'info',
+                bottomEnd: 'paging'
+            },
+            responsive: true
+        });
+
+        $('.dataTables_filter input').addClass('form-control form-control-sm');
+        $('.dataTables_length select').addClass('form-select form-select-sm');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit Lead{% else %}New Lead{% endif %} - BuilderCRM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <div class="card p-4">
+            <h2 class="mb-4 fw-bold">{% if form.instance.pk %}Edit Lead{% else %}New Lead{% endif %}</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.first_name.id_for_label }}">First
+                            Name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.last_name.id_for_label }}">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.phone.id_for_label }}">Phone</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger small">{{ form.phone.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.email.id_for_label }}">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.status.id_for_label }}">Status</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                            for="{{ form.lead_priority.id_for_label }}">Priority</label>
+                        {{ form.lead_priority }}
+                        {% if form.lead_priority.errors %}<div class="text-danger small">{{ form.lead_priority.errors }}
+                        </div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.source.id_for_label }}">Source</label>
+                        {{ form.source }}
+                        {% if form.source.errors %}<div class="text-danger small">{{ form.source.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.lead_location.id_for_label }}">Lead
+                            Location</label>
+                        {{ form.lead_location }}
+                        {% if form.lead_location.errors %}<div class="text-danger small">{{ form.lead_location.errors }}
+                        </div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                            for="{{ form.interested_location.id_for_label }}">Interested Location</label>
+                        {{ form.interested_location }}
+                        {% if form.interested_location.errors %}<div class="text-danger small">
+                            {{ form.interested_location.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.assigned_to.id_for_label }}">Assigned
+                            To</label>
+                        {{ form.assigned_to }}
+                        {% if form.assigned_to.errors %}<div class="text-danger small">{{ form.assigned_to.errors }}
+                        </div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                            for="{{ form.interested_project.id_for_label }}">Interested Project</label>
+                        {{ form.interested_project }}
+                        {% if form.interested_project.errors %}<div class="text-danger small">
+                            {{ form.interested_project.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.interested_unit.id_for_label }}">Interested
+                            Unit</label>
+                        {{ form.interested_unit }}
+                        {% if form.interested_unit.errors %}<div class="text-danger small">
+                            {{ form.interested_unit.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold" for="{{ form.notes.id_for_label }}">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="{% url 'lead_list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const projectField = document.querySelector('[name="interested_project"]');
+            const unitField = document.querySelector('[name="interested_unit"]');
+
+            if (projectField && unitField) {
+                projectField.addEventListener('change', function () {
+                    const projectId = this.value;
+                    if (!projectId) {
+                        unitField.innerHTML = '<option value="">---------</option>';
+                        return;
+                    }
+
+                    const currentValue = unitField.value;
+                    fetch(`/properties/api/units/?project=${projectId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            unitField.innerHTML = '<option value="">---------</option>';
+                            data.forEach(unit => {
+                                const selected = unit.id == currentValue ? 'selected' : '';
+                                const statusTag = unit.status !== 'AVAILABLE' ? ` (${unit.status})` : '';
+                                unitField.innerHTML += `<option value="${unit.id}" ${selected}>${unit.unit_number}${statusTag}</option>`;
+                            });
+                        });
+                });
+            }
+        });
+    </script>
+    {% endblock %}

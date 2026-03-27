@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Add Employee - BuilderCRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>{% if form.instance.pk %}Edit Employee{% else %}Add New Employee{% endif %}</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'hr_dashboard' %}">HR Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'employee_list' %}">Employees</a></li>
+                <li class="breadcrumb-item active">{% if form.instance.pk %}Edit Employee{% else %}
+                    Add Employee{% endif %}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <h4 class="mb-3">Personal Details</h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.first_name|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.last_name|as_crispy_field }}
+                </div>
+            </div>
+
+            {% if not form.instance.pk %}
+            <h4 class="mb-3">User Account Details</h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.username|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.email|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.password|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.user_role|as_crispy_field }}
+                </div>
+            </div>
+
+            <hr class="my-4">
+            {% endif %}
+
+            <h4 class="mb-3">Employment Details</h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.employee_id|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.department|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.branch|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.designation|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.date_of_joining|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.salary|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.emergency_contact|as_crispy_field }}
+                </div>
+            </div>
+            <div class="mb-3">
+                {{ form.address|as_crispy_field }}
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'employee_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update Employee{% else %}Create
+                    Employee{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

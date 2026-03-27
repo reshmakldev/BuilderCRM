@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Django
+db.sqlite3
+media/
+static_root/
+*.log
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Migrations
+*/migrations/*
+!*/migrations/__init__.py
+
+# Build/Dist
+build/
+dist/
+*.spec
+tmp/
