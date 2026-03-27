@@ -137,36 +137,20 @@
         </div>
     </div>
 
-    <!-- Unit Inventory Card -->
+    <!-- Sales Information Card -->
     <div class="col-md-4 col-lg-4 order-3 mb-4">
         <div class="card h-100 p-4">
-            <div class=" d-flex align-items-center justify-content-between">
-                <h5 class="card-title m-0 me-2">Unit Inventory</h5>
+            <div class="d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0 me-2">Sales Information</h5>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="d-flex flex-column align-items-start">
-                        <h3 class="mb-1">{{ available_units|format_number }}</h3>
-                        <small class="text-success fw-semibold">Available Units</small>
+                        <h3 class="mb-1">{{ total_bookings|format_number }}</h3>
+                        <small class="text-primary fw-semibold">Total Sale Deals</small>
                     </div>
-                    <div id="unitInventoryApex"></div>
                 </div>
-                <ul class="p-0 m-0">
-                    <li class="d-flex mb-4 pb-1">
-                        <div class="avatar flex-shrink-0 me-3">
-                            <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-home-alt"></i></span>
-                        </div>
-                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                                <h6 class="mb-0">Residential</h6>
-                                <small class="text-muted">Apartments & Villas</small>
-                            </div>
-                            <div class="user-progress">
-                                <small class="fw-semibold">{{ available_units|format_number }}</small>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
+                <div id="salesTrendApex"></div>
             </div>
         </div>
     </div>
@@ -348,22 +332,34 @@
         };
         new ApexCharts(document.querySelector("#leadTrendApex"), trendOptions).render();
 
-        const availablePct = totalUnits > 0 ? Math.round((availableUnits / totalUnits) * 100) : 0;
-        const unitOptions = {
-            series: [availablePct],
-            chart: { height: 150, type: 'radialBar' },
+        // Sales Trend Chart
+        const salesOptions = {
+            series: [{
+                name: 'Sales',
+                data: getJsonData('booking-trend')
+            }],
+            chart: {
+                height: 200,
+                type: 'bar',
+                toolbar: { show: false }
+            },
             plotOptions: {
-                radialBar: {
-                    hollow: { size: '50%' },
-                    dataLabels: {
-                        name: { show: false },
-                        value: { offsetY: 5, fontSize: '15px' }
-                    }
+                bar: {
+                    columnWidth: '40%',
+                    borderRadius: 4
                 }
             },
-            colors: [config.colors.success]
+            dataLabels: { enabled: false },
+            colors: [config.colors.info],
+            xaxis: {
+                categories: getJsonData('monthly-labels'),
+                axisBorder: { show: false },
+                axisTicks: { show: false }
+            },
+            yaxis: { show: false },
+            grid: { show: false }
         };
-        new ApexCharts(document.querySelector("#unitInventoryApex"), unitOptions).render();
+        new ApexCharts(document.querySelector("#salesTrendApex"), salesOptions).render();
 
         // Project Unit Inventory Chart
         const projectInventoryOptions = {
