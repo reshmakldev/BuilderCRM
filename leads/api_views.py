@@ -121,7 +121,7 @@ def lead_list_api(request):
         elif lead.status == 'LOST': status_bg = 'bg-label-danger'
         elif lead.status == 'FAKE': status_bg = 'bg-label-danger'
         
-        status_display = dict(Lead.STATUS_CHOICES()).get(lead.status, lead.status)
+        status_display = lead.get_status_display()
         status_html = f'<span class="badge {status_bg}">{status_display}</span>'
         
         # Phone Link HTML
@@ -170,7 +170,7 @@ def lead_list_api(request):
         elif 'INSTA' in source_val: source_bg = 'bg-label-danger'
         elif 'REFER' in source_val: source_bg = 'bg-label-warning'
         
-        source_display = dict(Lead.SOURCE_CHOICES()).get(lead.source, lead.source) if lead.source else "-"
+        source_display = lead.get_source_display() if lead.source else "-"
         source_html = f'<span class="badge {source_bg}">{source_display}</span>'
 
         response_data.append([

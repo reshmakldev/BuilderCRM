@@ -3,41 +3,20 @@ from django.conf import settings
 from properties.models import Project, Unit
 from core.models import BaseModel
 
+# Stubs for historical migration compatibility
+def get_status_choices(): return []
+def get_priority_choices(): return []
+def get_source_choices(): return []
 
-def get_status_choices():
-    from core.models import ApplicationCode
-    return list(
-        ApplicationCode.objects.filter(key='STATUS_CHOICES', is_active=True)
-        .values_list('code', 'name')
-    )
-def get_priority_choices():
-    from core.models import ApplicationCode
-    return list(
-        ApplicationCode.objects.filter(key='PRIORITY_CHOICES', is_active=True)
-        .values_list('code', 'name')
-    )
-def get_source_choices():
-    from core.models import ApplicationCode
-    return list(
-        ApplicationCode.objects.filter(key='SOURCE_CHOICES', is_active=True)
-        .values_list('code', 'name')
-    )
 
 class Lead(BaseModel):
-    STATUS_CHOICES = get_status_choices
-    
-    PRIORITY_CHOICES = get_priority_choices 
-    
-    SOURCE_CHOICES = get_source_choices
-
-    
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=20)
-    status = models.CharField(max_length=20, choices=get_status_choices, default='NEW')
-    lead_priority = models.CharField(max_length=20, choices=get_priority_choices, blank=True, null=True)
-    source = models.CharField(max_length=20, choices=get_source_choices, blank=True, null=True)
+    status = models.CharField(max_length=20, default='NEW')
+    lead_priority = models.CharField(max_length=20, blank=True, null=True)
+    source = models.CharField(max_length=20, blank=True, null=True)
     
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
     interested_project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name='interested_leads')
@@ -59,6 +38,21 @@ class Lead(BaseModel):
 
     def __str__(self):
         return f"{self.lead_code} - {self.first_name} {self.last_name}"
+
+    def get_status_display(self):
+        from core.models import ApplicationCode
+        code_obj = ApplicationCode.objects.filter(key='STATUS_CHOICES', code=self.status).first()
+        return code_obj.name if code_obj else self.status
+
+    def get_source_display(self):
+        from core.models import ApplicationCode
+        code_obj = ApplicationCode.objects.filter(key='SOURCE_CHOICES', code=self.source).first()
+        return code_obj.name if code_obj else self.source
+
+    def get_lead_priority_display(self):
+        from core.models import ApplicationCode
+        code_obj = ApplicationCode.objects.filter(key='PRIORITY_CHOICES', code=self.lead_priority).first()
+        return code_obj.name if code_obj else self.lead_priority
 
 class LeadActivity(BaseModel):
     ACTIVITY_TYPES = (

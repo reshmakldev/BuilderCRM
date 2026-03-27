@@ -59,17 +59,20 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Chart Data: Leads by Status
         status_counts = lead_qs.values('status').annotate(total=Count('status'))
-        context['status_labels'] = [dict(Lead.STATUS_CHOICES()).get(item['status'], item['status']) for item in status_counts]
+        status_dict = dict(ApplicationCode.objects.filter(key='STATUS_CHOICES', is_active=True).values_list('code', 'name'))
+        context['status_labels'] = [status_dict.get(item['status'], item['status']) for item in status_counts]
         context['status_data'] = [item['total'] for item in status_counts]
 
         # Chart Data: Leads by Source
         source_counts = lead_qs.values('source').annotate(total=Count('source'))
-        context['source_labels'] = [dict(Lead.SOURCE_CHOICES()).get(item['source'], 'Direct') for item in source_counts]
+        source_dict = dict(ApplicationCode.objects.filter(key='SOURCE_CHOICES', is_active=True).values_list('code', 'name'))
+        context['source_labels'] = [source_dict.get(item['source'], 'Direct') for item in source_counts]
         context['source_data'] = [item['total'] for item in source_counts]
 
         # Chart Data: Leads by Priority
         priority_counts = lead_qs.values('lead_priority').annotate(total=Count('lead_priority'))
-        priority_labels = [dict(Lead.PRIORITY_CHOICES()).get(item['lead_priority'], 'Unknown') for item in priority_counts]
+        priority_dict = dict(ApplicationCode.objects.filter(key='PRIORITY_CHOICES', is_active=True).values_list('code', 'name'))
+        priority_labels = [priority_dict.get(item['lead_priority'], 'Unknown') for item in priority_counts]
         priority_data = [item['total'] for item in priority_counts]
         context['priority_labels'] = priority_labels
         context['priority_data'] = priority_data
